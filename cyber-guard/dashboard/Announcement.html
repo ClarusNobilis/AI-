@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - 发送公告</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <style>
+        :root {
+            --primary-dark: #0a0a12;
+            --primary-dark-alt: #12121f;
+            --primary-accent: #00ff9d;
+            --secondary-accent: #00ccff;
+            --danger-accent: #ff2a6d;
+            --warning-accent: #ffcc00;
+            --info-accent: #9d4edd;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --card-bg: rgba(10, 15, 30, 0.7);
+            --card-border: rgba(0, 255, 157, 0.2);
+            --glow-primary: 0 0 10px rgba(0, 255, 157, 0.5);
+            --glow-secondary: 0 0 10px rgba(0, 204, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 100, 200, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 150, 0.1) 0%, transparent 20%),
+                linear-gradient(to bottom, var(--primary-dark), var(--primary-dark-alt));
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 20, 40, 0.2) 0px,
+                    rgba(0, 20, 40, 0.2) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Terminal-style header */
+        .terminal-header {
+            background-color: rgba(5, 10, 20, 0.9);
+            border-bottom: 1px solid var(--primary-accent);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--glow-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            color: var(--primary-accent);
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main container */
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 250px;
+            background-color: rgba(10, 15, 25, 0.8);
+            border-right: 1px solid var(--card-border);
+            padding: 25px 0;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .admin-sidebar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(0, 255, 157, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            padding: 10px 25px;
+            font-size: 0.9rem;
+            color: var(--secondary-accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 204, 255, 0.2);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0, 255, 157, 0.1);
+            color: var(--primary-accent);
+        }
+
+        .menu-item.active {
+            background-color: rgba(0, 255, 157, 0.15);
+            color: var(--primary-accent);
+            border-left: 3px solid var(--primary-accent);
+        }
+
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-item .badge {
+            background-color: var(--danger-accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            position: absolute;
+            right: 25px;
+        }
+
+        /* Announcement Content */
+        .announcement-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Announcement Form */
+        .announcement-form-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .announcement-form-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            color: var(--primary-accent);
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: var(--secondary-accent);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: var(--glow-primary);
+        }
+
+        .form-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-hint i {
+            color: var(--warning-accent);
+        }
+
+        /* Rich Text Editor */
+        .editor-container {
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .ql-toolbar {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            background: rgba(0, 20, 40, 0.7);
+            border-bottom: 1px solid var(--card-border) !important;
+        }
+        
+        .ql-container {
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            border: none !important;
+        }
+        
+        .ql-editor {
+            min-height: 250px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .ql-editor.ql-blank::before {
+            color: var(--text-secondary);
+            font-style: normal;
+        }
+        
+        /* Recipients Section */
+        .recipients-section {
+            background: rgba(0, 15, 30, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .recipients-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .recipients-title {
+            font-size: 1.2rem;
+            color: var(--primary-accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recipients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .recipient-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(0, 10, 20, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .recipient-item:hover {
+            border-color: var(--primary-accent);
+            background: rgba(0, 255, 157, 0.1);
+        }
+
+        .recipient-item.active {
+            border-color: var(--primary-accent);
+            background: rgba(0, 255, 157, 0.15);
+        }
+
+        .recipient-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0, 204, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 14px;
+            color: var(--secondary-accent);
+        }
+
+        .recipient-name {
+            font-size: 0.9rem;
+        }
+
+        .custom-recipients {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-recipients label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .recipient-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .recipient-tag {
+            background: rgba(0, 204, 255, 0.15);
+            color: var(--secondary-accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .recipient-tag i {
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Switch Toggle */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--text-secondary);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--primary-dark);
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--glow-primary);
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+        }
+
+        /* Announcement History */
+        .history-section {
+            margin-top: 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-title {
+            font-size: 1.5rem;
+            color: var(--primary-accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-list {
+            list-style: none;
+        }
+
+        .history-item {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary-accent);
+        }
+
+        .announcement-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .announcement-preview {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .announcement-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .meta-item i {
+            color: var(--secondary-accent);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--primary-accent); }
+            100% { opacity: 0.8; }
+        }
+
+        .glow {
+            text-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        /* Terminal cursor effect */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: var(--primary-accent);
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .menu-item {
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .recipients-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .announcement-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Terminal-style Header -->
+    <header class="terminal-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="logo-text">CyberGuard<span class="cursor"></span></div>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <div class="user-details">
+                <div class="user-name">admin@cyberguard.io</div>
+                <div class="user-role">超级管理员</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">导航菜单</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='../admin/admin.html'">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>控制台</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-users"></i>
+                        <span>用户管理</span>
+                        <span class="badge">12</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='articles.html'">
+                        <i class="fas fa-file-alt"></i>
+                        <span>内容管理</span>
+                        <span class="badge">5</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='tools.html'">
+                        <i class="fas fa-tools"></i>
+                        <span>工具审核</span>
+                        <span class="badge">8</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='events.html'">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全事件</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">系统管理</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='System_Setting.html'">
+                        <i class="fas fa-cog"></i>
+                        <span>系统设置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Database_management.html'">
+                        <i class="fas fa-database"></i>
+                        <span>数据库管理</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Permission_configuration.html'">
+                        <i class="fas fa-key"></i>
+                        <span>权限配置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Operation_Log.html'">
+                        <i class="fas fa-history"></i>
+                        <span>操作日志</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">快速操作</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='Add_administrators.html'">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>添加管理员</span>
+                    </li>
+                    <li class="menu-item active" onclick="window.location.href='Announcement.html'">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>发送公告</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Data_export.html'">
+                        <i class="fas fa-file-export"></i>
+                        <span>数据导出</span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Announcement Content -->
+        <main class="announcement-content">
+            <div class="content-header">
+                <h1 class="section-title">发送系统公告</h1>
+                <p class="section-subtitle">向社区成员发布重要通知和系统更新</p>
+            </div>
+
+            <div class="announcement-form-container">
+                <div class="form-header">
+                    <div class="form-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h2 class="form-title">创建新公告</h2>
+                    <p class="form-subtitle">填写公告信息并选择接收对象</p>
+                </div>
+                
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-heading"></i> 公告标题</label>
+                        <input type="text" class="form-input" id="announcementTitle" placeholder="输入公告标题" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-align-left"></i> 公告内容</label>
+                        <div class="editor-container">
+                            <div id="editor"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recipients Section -->
+                    <div class="recipients-section">
+                        <div class="recipients-header">
+                            <h3 class="recipients-title"><i class="fas fa-users"></i> 接收对象</h3>
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="checkbox" id="urgentFlag">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>重要公告</span>
+                            </div>
+                        </div>
+                        
+                        <div class="recipients-grid">
+                            <div class="recipient-item active">
+                                <div class="recipient-icon"><i class="fas fa-users"></i></div>
+                                <div class="recipient-name">全体用户</div>
+                            </div>
+                            <div class="recipient-item">
+                                <div class="recipient-icon"><i class="fas fa-user-shield"></i></div>
+                                <div class="recipient-name">管理员</div>
+                            </div>
+                            <div class="recipient-item">
+                                <div class="recipient-icon"><i class="fas fa-user-check"></i></div>
+                                <div class="recipient-name">活跃用户</div>
+                            </div>
+                            <div class="recipient-item">
+                                <div class="recipient-icon"><i class="fas fa-user-clock"></i></div>
+                                <div class="recipient-name">新注册用户</div>
+                            </div>
+                        </div>
+                        
+                        <div class="custom-recipients">
+                            <label class="form-label"><i class="fas fa-user-plus"></i> 添加特定用户</label>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <input type="text" class="form-input" id="addUser" placeholder="输入用户名或邮箱">
+                                </div>
+                                <button type="button" class="btn btn-secondary" id="addUserBtn">
+                                    <i class="fas fa-plus"></i> 添加
+                                </button>
+                            </div>
+                            <div class="recipient-tags" id="recipientTags">
+                                <!-- Tags will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label"><i class="fas fa-clock"></i> 发送时间</label>
+                            <div class="switch-container" style="margin-bottom: 10px;">
+                                <label class="switch">
+                                    <input type="checkbox" id="scheduleToggle">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>定时发送</span>
+                            </div>
+                            <div id="scheduleSection" style="display: none;">
+                                <input type="datetime-local" class="form-input" id="scheduleTime">
+                                <div class="form-hint"><i class="fas fa-info-circle"></i> 设置未来的发送时间</div>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label"><i class="fas fa-bell"></i> 发送方式</label>
+                            <select class="form-select" id="deliveryMethod">
+                                <option value="in-app">站内通知</option>
+                                <option value="email">电子邮件</option>
+                                <option value="both">站内通知 + 电子邮件</option>
+                            </select>
+                            <div class="form-hint"><i class="fas fa-info-circle"></i> 选择公告的发送渠道</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 发送公告
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="saveDraftBtn">
+                            <i class="fas fa-save"></i> 保存草稿
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Announcement History -->
+            <div class="history-section">
+                <div class="history-header">
+                    <h3 class="history-title"><i class="fas fa-history"></i> 公告历史记录</h3>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                </div>
+                
+                <ul class="history-list" id="announcementHistory">
+                    <li class="history-item">
+                        <div class="announcement-header">
+                            <div class="announcement-title">系统维护通知</div>
+                            <div class="announcement-date">2023-10-20 14:30</div>
+                        </div>
+                        <div class="announcement-preview">各位用户请注意，我们将在本周六凌晨2:00-5:00进行系统维护，届时服务将暂时中断。请提前做好安排...</div>
+                        <div class="announcement-meta">
+                            <div class="meta-item"><i class="fas fa-users"></i> 全体用户</div>
+                            <div class="meta-item"><i class="fas fa-paper-plane"></i> 已发送</div>
+                            <div class="meta-item"><i class="fas fa-eye"></i> 8,124次查看</div>
+                        </div>
+                    </li>
+                    <li class="history-item">
+                        <div class="announcement-header">
+                            <div class="announcement-title">安全更新公告</div>
+                            <div class="announcement-date">2023-10-15 09:15</div>
+                        </div>
+                        <div class="announcement-preview">本次更新修复了XSS漏洞（CVE-2023-12345）和权限提升漏洞（CVE-2023-12346）。强烈建议所有用户立即更新...</div>
+                        <div class="announcement-meta">
+                            <div class="meta-item"><i class="fas fa-user-shield"></i> 管理员</div>
+                            <div class="meta-item"><i class="fas fa-paper-plane"></i> 已发送</div>
+                            <div class="meta-item"><i class="fas fa-eye"></i> 42次查看</div>
+                        </div>
+                    </li>
+                    <li class="history-item">
+                        <div class="announcement-header">
+                            <div class="announcement-title">社区规则更新</div>
+                            <div class="announcement-date">2023-10-10 16:45</div>
+                        </div>
+                        <div class="announcement-preview">为了维护社区环境，我们更新了用户行为准则。主要变更包括：禁止发布未经授权的安全工具，加强版权保护措施...</div>
+                        <div class="announcement-meta">
+                            <div class="meta-item"><i class="fas fa-users"></i> 全体用户</div>
+                            <div class="meta-item"><i class="fas fa-paper-plane"></i> 已发送</div>
+                            <div class="meta-item"><i class="fas fa-eye"></i> 5,742次查看</div>
+                        </div>
+                    </li>
+                    <li class="history-item">
+                        <div class="announcement-header">
+                            <div class="announcement-title">新功能预告</div>
+                            <div class="announcement-date">2023-10-05 11:20</div>
+                        </div>
+                        <div class="announcement-preview">我们很高兴地宣布，下个月将推出实验室功能！您可以在安全环境中测试漏洞和攻击技术，无需担心法律问题...</div>
+                        <div class="announcement-meta">
+                            <div class="meta-item"><i class="fas fa-user-check"></i> 活跃用户</div>
+                            <div class="meta-item"><i class="fas fa-paper-plane"></i> 已发送</div>
+                            <div class="meta-item"><i class="fas fa-eye"></i> 3,215次查看</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟终端光标效果
+            const cursor = document.querySelector('.cursor');
+            setInterval(() => {
+                cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+            }, 500);
+            
+            // 初始化富文本编辑器
+            const quill = new Quill('#editor', {
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                },
+                placeholder: '在此输入公告内容...',
+                theme: 'snow'
+            });
+            
+            // 设置编辑器样式
+            const editor = document.querySelector('.ql-editor');
+            editor.style.color = 'var(--text-primary)';
+            editor.style.backgroundColor = 'rgba(0, 10, 20, 0.5)';
+            
+            // 接收对象选择
+            const recipientItems = document.querySelectorAll('.recipient-item');
+            recipientItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.classList.contains('active')) {
+                        // 全体用户不能取消选择
+                        if (this.querySelector('.recipient-name').textContent !== '全体用户') {
+                            this.classList.remove('active');
+                        }
+                    } else {
+                        this.classList.add('active');
+                    }
+                });
+            });
+            
+            // 添加特定用户
+            const addUserBtn = document.getElementById('addUserBtn');
+            const addUserInput = document.getElementById('addUser');
+            const recipientTags = document.getElementById('recipientTags');
+            
+            addUserBtn.addEventListener('click', function() {
+                const username = addUserInput.value.trim();
+                if (username) {
+                    const tag = document.createElement('div');
+                    tag.className = 'recipient-tag';
+                    tag.innerHTML = `${username} <i class="fas fa-times"></i>`;
+                    recipientTags.appendChild(tag);
+                    addUserInput.value = '';
+                    
+                    // 添加删除功能
+                    tag.querySelector('i').addEventListener('click', function() {
+                        tag.remove();
+                    });
+                }
+            });
+            
+            // 定时发送切换
+            const scheduleToggle = document.getElementById('scheduleToggle');
+            const scheduleSection = document.getElementById('scheduleSection');
+            
+            scheduleToggle.addEventListener('change', function() {
+                scheduleSection.style.display = this.checked ? 'block' : 'none';
+            });
+            
+            // 表单提交
+            const announcementForm = document.getElementById('announcementForm');
+            announcementForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const title = document.getElementById('announcementTitle').value;
+                const content = quill.root.innerHTML;
+                const urgent = document.getElementById('urgentFlag').checked;
+                const deliveryMethod = document.getElementById('deliveryMethod').value;
+                const scheduled = document.getElementById('scheduleToggle').checked;
+                const scheduleTime = scheduled ? document.getElementById('scheduleTime').value : '立即发送';
+                
+                // 获取选中的接收对象
+                const selectedRecipients = [];
+                document.querySelectorAll('.recipient-item.active').forEach(item => {
+                    selectedRecipients.push(item.querySelector('.recipient-name').textContent);
+                });
+                
+                // 获取添加的用户标签
+                const customUsers = [];
+                document.querySelectorAll('.recipient-tag').forEach(tag => {
+                    customUsers.push(tag.textContent.replace('×', '').trim());
+                });
+                
+                if (selectedRecipients.length === 0 && customUsers.length === 0) {
+                    alert('请选择至少一个接收对象！');
+                    return;
+                }
+                
+                // 显示加载状态
+                const submitBtn = this.querySelector('.btn-primary');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中...';
+                submitBtn.disabled = true;
+                
+                // 模拟发送过程
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    
+                    // 显示成功消息
+                    const successMsg = document.createElement('div');
+                    successMsg.textContent = `公告 "${title}" 发送成功！`;
+                    successMsg.style.position = 'fixed';
+                    successMsg.style.bottom = '20px';
+                    successMsg.style.right = '20px';
+                    successMsg.style.backgroundColor = 'rgba(0, 150, 0, 0.8)';
+                    successMsg.style.color = 'white';
+                    successMsg.style.padding = '15px 25px';
+                    successMsg.style.borderRadius = '4px';
+                    successMsg.style.zIndex = '1000';
+                    successMsg.style.boxShadow = '0 0 10px rgba(0, 255, 100, 0.5)';
+                    document.body.appendChild(successMsg);
+                    
+                    // 3秒后消失
+                    setTimeout(() => {
+                        successMsg.remove();
+                        // 添加到历史记录顶部
+                        addToHistory(title, content, selectedRecipients, customUsers);
+                        // 重置表单
+                        announcementForm.reset();
+                        quill.root.innerHTML = '';
+                        recipientTags.innerHTML = '';
+                        scheduleSection.style.display = 'none';
+                    }, 3000);
+                }, 2000);
+            });
+            
+            // 保存草稿
+            document.getElementById('saveDraftBtn').addEventListener('click', function() {
+                const title = document.getElementById('announcementTitle').value;
+                if (!title) {
+                    alert('请输入公告标题！');
+                    return;
+                }
+                
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-save"></i> 保存草稿';
+                    this.disabled = false;
+                    
+                    alert(`公告 "${title}" 已保存为草稿！`);
+                }, 1000);
+            });
+            
+            // 添加到历史记录函数
+            function addToHistory(title, content, recipients, customUsers) {
+                const historyList = document.getElementById('announcementHistory');
+                const now = new Date();
+                const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                
+                // 创建预览文本（去除HTML标签）
+                const preview = content.replace(/<[^>]*>/g, '').substring(0, 150) + '...';
+                
+                // 组合接收对象
+                const allRecipients = [...recipients, ...customUsers];
+                const recipientText = allRecipients.length > 2 
+                    ? `${allRecipients[0]}, ${allRecipients[1]} 等${allRecipients.length}个对象` 
+                    : allRecipients.join(', ');
+                
+                const historyItem = document.createElement('li');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="announcement-header">
+                        <div class="announcement-title">${title}</div>
+                        <div class="announcement-date">${formattedDate}</div>
+                    </div>
+                    <div class="announcement-preview">${preview}</div>
+                    <div class="announcement-meta">
+                        <div class="meta-item"><i class="fas fa-users"></i> ${recipientText}</div>
+                        <div class="meta-item"><i class="fas fa-paper-plane"></i> 已发送</div>
+                        <div class="meta-item"><i class="fas fa-eye"></i> 0次查看</div>
+                    </div>
+                `;
+                
+                historyList.insertBefore(historyItem, historyList.firstChild);
+            }
+            
+            // 设置默认日期时间（当前时间+1小时）
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const defaultDateTime = now.toISOString().slice(0, 16);
+            document.getElementById('scheduleTime').value = defaultDateTime;
+        });
+    </script>
+</body>
+</html>

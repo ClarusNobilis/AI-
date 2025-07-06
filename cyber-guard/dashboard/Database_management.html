@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - 数据库管理</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0a0a12;
+            --primary-dark-alt: #12121f;
+            --primary-accent: #00ff9d;
+            --secondary-accent: #00ccff;
+            --danger-accent: #ff2a6d;
+            --warning-accent: #ffcc00;
+            --info-accent: #9d4edd;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --card-bg: rgba(10, 15, 30, 0.7);
+            --card-border: rgba(0, 255, 157, 0.2);
+            --glow-primary: 0 0 10px rgba(0, 255, 157, 0.5);
+            --glow-secondary: 0 0 10px rgba(0, 204, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 100, 200, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 150, 0.1) 0%, transparent 20%),
+                linear-gradient(to bottom, var(--primary-dark), var(--primary-dark-alt));
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 20, 40, 0.2) 0px,
+                    rgba(0, 20, 40, 0.2) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Terminal-style header */
+        .terminal-header {
+            background-color: rgba(5, 10, 20, 0.9);
+            border-bottom: 1px solid var(--primary-accent);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--glow-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            color: var(--primary-accent);
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main container */
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 250px;
+            background-color: rgba(10, 15, 25, 0.8);
+            border-right: 1px solid var(--card-border);
+            padding: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-sidebar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(0, 255, 157, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            padding: 10px 25px;
+            font-size: 0.9rem;
+            color: var(--secondary-accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 204, 255, 0.2);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0, 255, 157, 0.1);
+            color: var(--primary-accent);
+        }
+
+        .menu-item.active {
+            background-color: rgba(0, 255, 157, 0.15);
+            color: var(--primary-accent);
+            border-left: 3px solid var(--primary-accent);
+        }
+
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-item .badge {
+            background-color: var(--danger-accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            position: absolute;
+            right: 25px;
+        }
+
+        /* Database Content */
+        .database-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Database Stats */
+        .database-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Database Grid */
+        .database-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Database Card */
+        .database-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .database-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-accent);
+        }
+
+        .card-title i {
+            font-size: 1.5rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: var(--glow-primary);
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--glow-primary);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+        }
+
+        .btn-danger {
+            background: rgba(255, 42, 109, 0.15);
+            color: var(--danger-accent);
+            border: 1px solid var(--danger-accent);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 42, 109, 0.25);
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .db-table th {
+            background: rgba(0, 20, 40, 0.7);
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary-accent);
+            border-bottom: 2px solid var(--card-border);
+            position: sticky;
+            top: 0;
+        }
+
+        .db-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .db-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .db-table tr:hover {
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .table-name {
+            color: var(--primary-accent);
+            font-weight: 500;
+        }
+
+        .table-size {
+            color: var(--text-secondary);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .table-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-structure {
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+        }
+
+        .btn-optimize {
+            border-color: var(--primary-accent);
+            color: var(--primary-accent);
+        }
+
+        .btn-empty {
+            border-color: var(--warning-accent);
+            color: var(--warning-accent);
+        }
+
+        .btn-delete {
+            border-color: var(--danger-accent);
+            color: var(--danger-accent);
+        }
+
+        /* Query Result */
+        .query-result {
+            margin-top: 20px;
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--primary-accent);
+            display: none;
+        }
+
+        .result-success {
+            color: var(--primary-accent);
+            border-color: var(--primary-accent);
+        }
+
+        .result-error {
+            color: var(--danger-accent);
+            border-color: var(--danger-accent);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--primary-accent); }
+            100% { opacity: 0.8; }
+        }
+
+        .glow {
+            text-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        /* Terminal cursor effect */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: var(--primary-accent);
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .menu-item {
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .database-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .database-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Terminal-style Header -->
+    <header class="terminal-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="logo-text">CyberGuard<span class="cursor"></span></div>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <div class="user-details">
+                <div class="user-name">admin@cyberguard.io</div>
+                <div class="user-role">超级管理员</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">导航菜单</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='../admin/admin.html'">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>控制台</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-users"></i>
+                        <span>用户管理</span>
+                        <span class="badge">12</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='articles.html'">
+                        <i class="fas fa-file-alt"></i>
+                        <span>内容管理</span>
+                        <span class="badge">5</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='tools.html'">
+                        <i class="fas fa-tools"></i>
+                        <span>工具审核</span>
+                        <span class="badge">8</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='events.html'">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全事件</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">系统管理</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='System_Setting.html'">
+                        <i class="fas fa-cog"></i>
+                        <span>系统设置</span>
+                    </li>
+                    <li class="menu-item active" onclick="window.location.href='Database_management.html'">
+                        <i class="fas fa-database"></i>
+                        <span>数据库管理</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Permission_configuration.html'">
+                        <i class="fas fa-key"></i>
+                        <span>权限配置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Operation_Log.html'">
+                        <i class="fas fa-history"></i>
+                        <span>操作日志</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">快速操作</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='Add_administrators.html'">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>添加管理员</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Announcement.html'">
+                        <i class="fas fa-bell"></i>
+                        <span>发送公告</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Data_export.html'">
+                        <i class="fas fa-file-export"></i>
+                        <span>数据导出</span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Database Management Content -->
+        <main class="database-content">
+            <div class="content-header">
+                <h1 class="section-title">数据库管理系统</h1>
+                <p class="section-subtitle">管理CyberGuard平台数据库，执行查询、备份和优化操作</p>
+            </div>
+
+            <!-- Database Stats -->
+            <div class="database-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="stat-value">128.5 MB</div>
+                    <div class="stat-label">数据库大小</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">数据表</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">活动连接</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="stat-value">MySQL 8.0</div>
+                    <div class="stat-label">数据库版本</div>
+                </div>
+            </div>
+
+            <!-- Database Grid -->
+            <div class="database-grid">
+                <!-- Backup & Restore -->
+                <div class="database-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-download"></i> 备份与恢复</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">备份文件名</label>
+                        <input type="text" class="form-input" value="cyberguard_backup_20231015.sql" placeholder="输入备份文件名">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">备份目录</label>
+                        <input type="text" class="form-input" value="/var/backups/db" placeholder="备份存储路径">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">压缩备份</label>
+                        <select class="form-select">
+                            <option selected>启用 (GZIP)</option>
+                            <option>禁用</option>
+                        </select>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="backupBtn">
+                            <i class="fas fa-save"></i> 立即备份
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-upload"></i> 恢复备份
+                        </button>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-label">最近备份</label>
+                        <div class="table-container">
+                            <table class="db-table">
+                                <thead>
+                                    <tr>
+                                        <th>文件名</th>
+                                        <th>大小</th>
+                                        <th>时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>cyberguard_backup_20231014.sql.gz</td>
+                                        <td>42.3 MB</td>
+                                        <td>昨天 23:45</td>
+                                    </tr>
+                                    <tr>
+                                        <td>cyberguard_backup_20231013.sql.gz</td>
+                                        <td>41.8 MB</td>
+                                        <td>2天前</td>
+                                    </tr>
+                                    <tr>
+                                        <td>cyberguard_backup_20231010.sql.gz</td>
+                                        <td>40.2 MB</td>
+                                        <td>5天前</td>
+                                    </tr>
+                                    <tr>
+                                        <td>cyberguard_backup_20231007.sql.gz</td>
+                                        <td>39.7 MB</td>
+                                        <td>1周前</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SQL Query Tool -->
+                <div class="database-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-terminal"></i> SQL查询工具</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">SQL查询</label>
+                        <textarea class="form-textarea" id="sqlQuery" placeholder="输入SQL查询语句...">SELECT * FROM users LIMIT 10;</textarea>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="executeBtn">
+                            <i class="fas fa-play"></i> 执行查询
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> 清空查询
+                        </button>
+                    </div>
+                    
+                    <div class="query-result" id="queryResult">
+                        <!-- Query results will appear here -->
+                    </div>
+                </div>
+                
+                <!-- Table Management -->
+                <div class="database-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-table"></i> 表管理</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">搜索表</label>
+                        <input type="text" class="form-input" placeholder="输入表名搜索..." id="tableSearch">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>表名</th>
+                                    <th>记录数</th>
+                                    <th>大小</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="table-name">users</td>
+                                    <td>8,452</td>
+                                    <td class="table-size">12.4 MB</td>
+                                    <td class="table-actions">
+                                        <button class="table-btn btn-structure">结构</button>
+                                        <button class="table-btn btn-optimize">优化</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="table-name">articles</td>
+                                    <td>2,147</td>
+                                    <td class="table-size">24.7 MB</td>
+                                    <td class="table-actions">
+                                        <button class="table-btn btn-structure">结构</button>
+                                        <button class="table-btn btn-optimize">优化</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="table-name">security_tools</td>
+                                    <td>317</td>
+                                    <td class="table-size">8.2 MB</td>
+                                    <td class="table-actions">
+                                        <button class="table-btn btn-structure">结构</button>
+                                        <button class="table-btn btn-optimize">优化</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="table-name">incidents</td>
+                                    <td>84</td>
+                                    <td class="table-size">3.1 MB</td>
+                                    <td class="table-actions">
+                                        <button class="table-btn btn-structure">结构</button>
+                                        <button class="table-btn btn-optimize">优化</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="table-name">comments</td>
+                                    <td>42,815</td>
+                                    <td class="table-size">32.6 MB</td>
+                                    <td class="table-actions">
+                                        <button class="table-btn btn-structure">结构</button>
+                                        <button class="table-btn btn-optimize">优化</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="table-name">logs</td>
+                                    <td>128,472</td>
+                                    <td class="table-size">48.5 MB</td>
+                                    <td class="table-actions">
+                                        <button class="table-btn btn-structure">结构</button>
+                                        <button class="table-btn btn-empty">清空</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="action-buttons" style="margin-top: 20px;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-sync-alt"></i> 优化所有表
+                        </button>
+                        <button class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 清空日志表
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Database Operations -->
+                <div class="database-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-tools"></i> 数据库操作</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">选择操作</label>
+                        <select class="form-select" id="dbOperation">
+                            <option>-- 请选择操作 --</option>
+                            <option>检查所有表状态</option>
+                            <option>修复所有表</option>
+                            <option>优化所有表</option>
+                            <option>清空查询缓存</option>
+                            <option>刷新权限表</option>
+                        </select>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="executeOpBtn">
+                            <i class="fas fa-play"></i> 执行操作
+                        </button>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-label">操作日志</label>
+                        <div class="table-container">
+                            <table class="db-table">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>操作</th>
+                                        <th>结果</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2023-10-15 09:45</td>
+                                        <td>优化 users 表</td>
+                                        <td style="color: var(--primary-accent);">成功</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-10-15 09:30</td>
+                                        <td>备份数据库</td>
+                                        <td style="color: var(--primary-accent);">成功</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-10-14 23:45</td>
+                                        <td>自动备份</td>
+                                        <td style="color: var(--primary-accent);">成功</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-10-14 18:20</td>
+                                        <td>修复 comments 表</td>
+                                        <td style="color: var(--primary-accent);">成功</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟终端光标效果
+            const cursor = document.querySelector('.cursor');
+            setInterval(() => {
+                cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+            }, 500);
+            
+            // 备份数据库按钮
+            const backupBtn = document.getElementById('backupBtn');
+            backupBtn.addEventListener('click', function() {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 备份中...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    
+                    // 显示备份成功消息
+                    const successMsg = document.createElement('div');
+                    successMsg.textContent = '数据库备份成功！文件已保存到 /var/backups/db/cyberguard_backup_20231015.sql.gz';
+                    successMsg.style.position = 'fixed';
+                    successMsg.style.bottom = '20px';
+                    successMsg.style.right = '20px';
+                    successMsg.style.backgroundColor = 'rgba(0, 150, 0, 0.8)';
+                    successMsg.style.color = 'white';
+                    successMsg.style.padding = '15px 25px';
+                    successMsg.style.borderRadius = '4px';
+                    successMsg.style.zIndex = '1000';
+                    successMsg.style.boxShadow = '0 0 10px rgba(0, 255, 100, 0.5)';
+                    document.body.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 5000);
+                }, 2000);
+            });
+            
+            // 执行SQL查询
+            const executeBtn = document.getElementById('executeBtn');
+            const sqlQuery = document.getElementById('sqlQuery');
+            const queryResult = document.getElementById('queryResult');
+            
+            executeBtn.addEventListener('click', function() {
+                const query = sqlQuery.value.trim();
+                if (!query) return;
+                
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 执行中...';
+                this.disabled = true;
+                
+                // 模拟查询结果
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-play"></i> 执行查询';
+                    this.disabled = false;
+                    
+                    queryResult.style.display = 'block';
+                    
+                    if (query.toLowerCase().includes('select')) {
+                        queryResult.className = 'query-result result-success';
+                        queryResult.innerHTML = `
+                            <div>查询成功！返回10条记录。</div>
+                            <div style="margin-top: 10px;">
+                                <pre>
++----+----------------+---------------------+
+| id | username       | email               |
++----+----------------+---------------------+
+| 1  | admin_user     | admin@cyberguard.io |
+| 2  | security_bug   | bug@security.org    |
+| 3  | net_guardian   | net@guardian.com    |
+| 4  | crypto_master  | crypto@master.net   |
+| 5  | pentest_guru   | guru@pentest.io     |
+| 6  | code_breaker   | code@breaker.dev    |
+| 7  | sys_admin      | sys@admin.org       |
+| 8  | web_defender   | web@defender.com    |
+| 9  | data_protector | data@protector.io   |
+| 10 | cloud_guard    | cloud@guardian.net  |
++----+----------------+---------------------+
+                                </pre>
+                            </div>
+                        `;
+                    } else if (query.toLowerCase().includes('drop') || query.toLowerCase().includes('delete')) {
+                        queryResult.className = 'query-result result-error';
+                        queryResult.innerHTML = '<div>错误：危险操作被阻止！只有管理员可以执行此操作。</div>';
+                    } else {
+                        queryResult.className = 'query-result result-success';
+                        queryResult.innerHTML = '<div>查询成功！影响行数: 0</div>';
+                    }
+                }, 1500);
+            });
+            
+            // 执行数据库操作
+            const executeOpBtn = document.getElementById('executeOpBtn');
+            const dbOperation = document.getElementById('dbOperation');
+            
+            executeOpBtn.addEventListener('click', function() {
+                const operation = dbOperation.value;
+                if (!operation || operation.startsWith('--')) return;
+                
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 执行中...';
+                this.disabled = true;
+                
+                // 模拟操作执行
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-play"></i> 执行操作';
+                    this.disabled = false;
+                    
+                    // 显示操作成功消息
+                    const successMsg = document.createElement('div');
+                    successMsg.textContent = `操作"${operation}"执行成功！`;
+                    successMsg.style.position = 'fixed';
+                    successMsg.style.bottom = '20px';
+                    successMsg.style.left = '20px';
+                    successMsg.style.backgroundColor = 'rgba(0, 150, 0, 0.8)';
+                    successMsg.style.color = 'white';
+                    successMsg.style.padding = '15px 25px';
+                    successMsg.style.borderRadius = '4px';
+                    successMsg.style.zIndex = '1000';
+                    successMsg.style.boxShadow = '0 0 10px rgba(0, 255, 100, 0.5)';
+                    document.body.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                }, 1000);
+            });
+            
+            // 表搜索功能
+            const tableSearch = document.getElementById('tableSearch');
+            tableSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.db-table tbody tr');
+                
+                rows.forEach(row => {
+                    const tableName = row.querySelector('.table-name').textContent.toLowerCase();
+                    if (tableName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 表操作按钮
+            const tableBtns = document.querySelectorAll('.table-btn');
+            tableBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tableRow = this.closest('tr');
+                    const tableName = tableRow.querySelector('.table-name').textContent;
+                    const action = this.textContent;
+                    
+                    let message = '';
+                    
+                    if (this.classList.contains('btn-structure')) {
+                        message = `正在查看表结构: ${tableName}`;
+                    } else if (this.classList.contains('btn-optimize')) {
+                        message = `正在优化表: ${tableName}`;
+                    } else if (this.classList.contains('btn-empty')) {
+                        message = `确定要清空表: ${tableName}？此操作不可撤销！`;
+                    } else if (this.classList.contains('btn-delete')) {
+                        message = `确定要删除表: ${tableName}？此操作不可撤销！`;
+                    }
+                    
+                    if (message) alert(message);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

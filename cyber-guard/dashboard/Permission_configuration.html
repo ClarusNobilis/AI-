@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - 权限配置</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0a0a12;
+            --primary-dark-alt: #12121f;
+            --primary-accent: #00ff9d;
+            --secondary-accent: #00ccff;
+            --danger-accent: #ff2a6d;
+            --warning-accent: #ffcc00;
+            --info-accent: #9d4edd;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --card-bg: rgba(10, 15, 30, 0.7);
+            --card-border: rgba(0, 255, 157, 0.2);
+            --glow-primary: 0 0 10px rgba(0, 255, 157, 0.5);
+            --glow-secondary: 0 0 10px rgba(0, 204, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 100, 200, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 150, 0.1) 0%, transparent 20%),
+                linear-gradient(to bottom, var(--primary-dark), var(--primary-dark-alt));
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 20, 40, 0.2) 0px,
+                    rgba(0, 20, 40, 0.2) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Terminal-style header */
+        .terminal-header {
+            background-color: rgba(5, 10, 20, 0.9);
+            border-bottom: 1px solid var(--primary-accent);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--glow-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            color: var(--primary-accent);
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main container */
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 250px;
+            background-color: rgba(10, 15, 25, 0.8);
+            border-right: 1px solid var(--card-border);
+            padding: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-sidebar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(0, 255, 157, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            padding: 10px 25px;
+            font-size: 0.9rem;
+            color: var(--secondary-accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 204, 255, 0.2);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0, 255, 157, 0.1);
+            color: var(--primary-accent);
+        }
+
+        .menu-item.active {
+            background-color: rgba(0, 255, 157, 0.15);
+            color: var(--primary-accent);
+            border-left: 3px solid var(--primary-accent);
+        }
+
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-item .badge {
+            background-color: var(--danger-accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            position: absolute;
+            right: 25px;
+        }
+
+        /* Permission Content */
+        .permission-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Permission Grid */
+        .permission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Permission Card */
+        .permission-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .permission-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-accent);
+        }
+
+        .card-title i {
+            font-size: 1.5rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: var(--glow-primary);
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--glow-primary);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .perm-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .perm-table th {
+            background: rgba(0, 20, 40, 0.7);
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary-accent);
+            border-bottom: 2px solid var(--card-border);
+            position: sticky;
+            top: 0;
+        }
+
+        .perm-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .perm-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .perm-table tr:hover {
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .role-name {
+            color: var(--primary-accent);
+            font-weight: 500;
+        }
+
+        .user-count {
+            color: var(--text-secondary);
+        }
+
+        .role-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .role-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .role-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-edit {
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+        }
+
+        .btn-delete {
+            border-color: var(--danger-accent);
+            color: var(--danger-accent);
+        }
+
+        /* Permission List */
+        .permission-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .permission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(0, 10, 20, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+        }
+
+        .perm-name {
+            font-size: 0.9rem;
+        }
+
+        .perm-desc {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        /* Switch Toggle */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--text-secondary);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--primary-dark);
+        }
+
+        /* User Role Assignment */
+        .user-role-assignment {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            background: rgba(0, 10, 20, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .user-avatar-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-details-small {
+            flex: 1;
+        }
+
+        .user-name-small {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .user-email-small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--primary-accent); }
+            100% { opacity: 0.8; }
+        }
+
+        .glow {
+            text-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        /* Terminal cursor effect */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: var(--primary-accent);
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .menu-item {
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .permission-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .permission-card {
+                padding: 20px;
+            }
+            
+            .permission-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Terminal-style Header -->
+    <header class="terminal-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="logo-text">CyberGuard<span class="cursor"></span></div>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <div class="user-details">
+                <div class="user-name">admin@cyberguard.io</div>
+                <div class="user-role">超级管理员</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">导航菜单</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='../admin/admin.html'">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>控制台</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-users"></i>
+                        <span>用户管理</span>
+                        <span class="badge">12</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='articles.html'">
+                        <i class="fas fa-file-alt"></i>
+                        <span>内容管理</span>
+                        <span class="badge">5</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='tools.html'">
+                        <i class="fas fa-tools"></i>
+                        <span>工具审核</span>
+                        <span class="badge">8</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='events.html'">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全事件</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">系统管理</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='System_Setting.html'">
+                        <i class="fas fa-cog"></i>
+                        <span>系统设置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Database_management.html'">
+                        <i class="fas fa-database"></i>
+                        <span>数据库管理</span>
+                    </li>
+                    <li class="menu-item active" onclick="window.location.href='Permission_configuration.html'">
+                        <i class="fas fa-key"></i>
+                        <span>权限配置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Operation_Log.html'">
+                        <i class="fas fa-history"></i>
+                        <span>操作日志</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">快速操作</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='Add_administrators.html'">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>添加管理员</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Announcement.html'">
+                        <i class="fas fa-bell"></i>
+                        <span>发送公告</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='Data_export.html'">
+                        <i class="fas fa-file-export"></i>
+                        <span>数据导出</span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Permission Management Content -->
+        <main class="permission-content">
+            <div class="content-header">
+                <h1 class="section-title">权限配置系统</h1>
+                <p class="section-subtitle">管理用户角色、权限分配和访问控制</p>
+            </div>
+
+            <!-- Permission Grid -->
+            <div class="permission-grid">
+                <!-- Role Management -->
+                <div class="permission-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-user-tag"></i> 角色管理</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-row" style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label class="form-label">新角色名称</label>
+                                <input type="text" class="form-input" id="newRoleName" placeholder="输入角色名称">
+                            </div>
+                            <div>
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary" id="addRoleBtn" style="height: 43px;">
+                                    <i class="fas fa-plus"></i> 添加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">系统角色</label>
+                        <div class="table-container">
+                            <table class="perm-table">
+                                <thead>
+                                    <tr>
+                                        <th>角色名称</th>
+                                        <th>用户数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="role-name">超级管理员</td>
+                                        <td class="user-count">3</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">内容管理员</td>
+                                        <td class="user-count">8</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">安全分析师</td>
+                                        <td class="user-count">12</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">工具审核员</td>
+                                        <td class="user-count">5</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">普通用户</td>
+                                        <td class="user-count">8,424</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Permission Assignment -->
+                <div class="permission-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-key"></i> 权限分配</h3>
+                        <div>
+                            <select class="form-select" id="roleSelector" style="width: 200px;">
+                                <option value="admin">超级管理员</option>
+                                <option value="content">内容管理员</option>
+                                <option value="analyst">安全分析师</option>
+                                <option value="reviewer">工具审核员</option>
+                                <option value="user">普通用户</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">系统权限</label>
+                        <div class="permission-list">
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">用户管理</div>
+                                    <div class="perm-desc">添加、编辑和删除用户</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">内容审核</div>
+                                    <div class="perm-desc">审核文章和工具</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">系统设置</div>
+                                    <div class="perm-desc">修改系统配置</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">数据库管理</div>
+                                    <div class="perm-desc">访问数据库管理工具</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">安全事件查看</div>
+                                    <div class="perm-desc">查看安全事件报告</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">权限管理</div>
+                                    <div class="perm-desc">管理用户角色和权限</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">工具上传</div>
+                                    <div class="perm-desc">上传安全工具</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="permission-item">
+                                <div>
+                                    <div class="perm-name">文章发布</div>
+                                    <div class="perm-desc">发布技术文章</div>
+                                </div>
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存权限设置
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- User Role Assignment -->
+                <div class="permission-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-user-plus"></i> 用户角色分配</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">搜索用户</label>
+                        <input type="text" class="form-input" id="userSearch" placeholder="输入用户名或邮箱...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">分配角色</label>
+                        <div class="user-role-assignment">
+                            <div class="user-avatar-small">AD</div>
+                            <div class="user-details-small">
+                                <div class="user-name-small">admin_user</div>
+                                <div class="user-email-small">admin@cyberguard.io</div>
+                            </div>
+                            <select class="form-select" style="width: 180px;">
+                                <option>超级管理员</option>
+                                <option>内容管理员</option>
+                                <option>安全分析师</option>
+                                <option>工具审核员</option>
+                                <option>普通用户</option>
+                            </select>
+                            <button class="btn btn-secondary" style="padding: 8px 15px;">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="user-role-assignment">
+                            <div class="user-avatar-small">SB</div>
+                            <div class="user-details-small">
+                                <div class="user-name-small">security_bug</div>
+                                <div class="user-email-small">bug.hunter@security.org</div>
+                            </div>
+                            <select class="form-select" style="width: 180px;">
+                                <option>超级管理员</option>
+                                <option>内容管理员</option>
+                                <option selected>安全分析师</option>
+                                <option>工具审核员</option>
+                                <option>普通用户</option>
+                            </select>
+                            <button class="btn btn-secondary" style="padding: 8px 15px;">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="user-role-assignment">
+                            <div class="user-avatar-small">PP</div>
+                            <div class="user-details-small">
+                                <div class="user-name-small">pentest_pro</div>
+                                <div class="user-email-small">pro.pentester@securitylab.io</div>
+                            </div>
+                            <select class="form-select" style="width: 180px;">
+                                <option>超级管理员</option>
+                                <option>内容管理员</option>
+                                <option>安全分析师</option>
+                                <option selected>工具审核员</option>
+                                <option>普通用户</option>
+                            </select>
+                            <button class="btn btn-secondary" style="padding: 8px 15px;">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="user-role-assignment">
+                            <div class="user-avatar-small">NT</div>
+                            <div class="user-details-small">
+                                <div class="user-name-small">new_tester</div>
+                                <div class="user-email-small">tester@testmail.com</div>
+                            </div>
+                            <select class="form-select" style="width: 180px;">
+                                <option>超级管理员</option>
+                                <option>内容管理员</option>
+                                <option>安全分析师</option>
+                                <option>工具审核员</option>
+                                <option selected>普通用户</option>
+                            </select>
+                            <button class="btn btn-secondary" style="padding: 8px 15px;">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Permission Groups -->
+                <div class="permission-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-users-cog"></i> 权限组管理</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">创建新权限组</label>
+                        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <input type="text" class="form-input" placeholder="权限组名称">
+                            </div>
+                            <div>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> 创建
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">现有权限组</label>
+                        <div class="table-container">
+                            <table class="perm-table">
+                                <thead>
+                                    <tr>
+                                        <th>组名称</th>
+                                        <th>权限数</th>
+                                        <th>角色数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="role-name">内容管理组</td>
+                                        <td>8</td>
+                                        <td>3</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                            <button class="role-btn btn-delete"><i class="fas fa-trash"></i> 删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">安全分析组</td>
+                                        <td>12</td>
+                                        <td>2</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                            <button class="role-btn btn-delete"><i class="fas fa-trash"></i> 删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">工具审核组</td>
+                                        <td>7</td>
+                                        <td>1</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                            <button class="role-btn btn-delete"><i class="fas fa-trash"></i> 删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="role-name">系统管理组</td>
+                                        <td>15</td>
+                                        <td>1</td>
+                                        <td class="role-actions">
+                                            <button class="role-btn btn-edit"><i class="fas fa-edit"></i> 编辑</button>
+                                            <button class="role-btn btn-delete"><i class="fas fa-trash"></i> 删除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟终端光标效果
+            const cursor = document.querySelector('.cursor');
+            setInterval(() => {
+                cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+            }, 500);
+            
+            // 添加新角色
+            const addRoleBtn = document.getElementById('addRoleBtn');
+            const newRoleName = document.getElementById('newRoleName');
+            
+            addRoleBtn.addEventListener('click', function() {
+                const roleName = newRoleName.value.trim();
+                if (!roleName) return;
+                
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 添加中...';
+                this.disabled = true;
+                
+                // 模拟添加角色
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-plus"></i> 添加';
+                    this.disabled = false;
+                    newRoleName.value = '';
+                    
+                    // 显示添加成功消息
+                    const successMsg = document.createElement('div');
+                    successMsg.textContent = `角色"${roleName}"添加成功！`;
+                    successMsg.style.position = 'fixed';
+                    successMsg.style.bottom = '20px';
+                    successMsg.style.right = '20px';
+                    successMsg.style.backgroundColor = 'rgba(0, 150, 0, 0.8)';
+                    successMsg.style.color = 'white';
+                    successMsg.style.padding = '15px 25px';
+                    successMsg.style.borderRadius = '4px';
+                    successMsg.style.zIndex = '1000';
+                    successMsg.style.boxShadow = '0 0 10px rgba(0, 255, 100, 0.5)';
+                    document.body.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                }, 1000);
+            });
+            
+            // 角色切换
+            const roleSelector = document.getElementById('roleSelector');
+            roleSelector.addEventListener('change', function() {
+                const role = this.value;
+                const permissionSwitches = document.querySelectorAll('.permission-list .switch input');
+                
+                // 根据角色调整权限开关状态（模拟）
+                permissionSwitches.forEach(switchElem => {
+                    if (role === 'admin') {
+                        switchElem.checked = true;
+                    } else if (role === 'content') {
+                        switchElem.checked = Math.random() > 0.3;
+                    } else if (role === 'analyst') {
+                        switchElem.checked = Math.random() > 0.5;
+                    } else if (role === 'reviewer') {
+                        switchElem.checked = Math.random() > 0.4;
+                    } else {
+                        switchElem.checked = Math.random() > 0.8;
+                    }
+                });
+            });
+            
+            // 用户搜索
+            const userSearch = document.getElementById('userSearch');
+            userSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const userAssignments = document.querySelectorAll('.user-role-assignment');
+                
+                userAssignments.forEach(assignment => {
+                    const username = assignment.querySelector('.user-name-small').textContent.toLowerCase();
+                    const email = assignment.querySelector('.user-email-small').textContent.toLowerCase();
+                    
+                    if (username.includes(searchTerm) || email.includes(searchTerm)) {
+                        assignment.style.display = 'flex';
+                    } else {
+                        assignment.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 保存用户角色
+            const saveButtons = document.querySelectorAll('.user-role-assignment .btn');
+            saveButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const assignment = this.closest('.user-role-assignment');
+                    const username = assignment.querySelector('.user-name-small').textContent;
+                    const roleSelect = assignment.querySelector('select');
+                    const role = roleSelect.options[roleSelect.selectedIndex].text;
+                    
+                    // 添加动画效果
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-save"></i>';
+                        
+                        // 显示保存成功消息
+                        const successMsg = document.createElement('div');
+                        successMsg.textContent = `用户"${username}"的角色已更新为: ${role}`;
+                        successMsg.style.position = 'fixed';
+                        successMsg.style.bottom = '20px';
+                        successMsg.style.left = '20px';
+                        successMsg.style.backgroundColor = 'rgba(0, 150, 0, 0.8)';
+                        successMsg.style.color = 'white';
+                        successMsg.style.padding = '15px 25px';
+                        successMsg.style.borderRadius = '4px';
+                        successMsg.style.zIndex = '1000';
+                        successMsg.style.boxShadow = '0 0 10px rgba(0, 255, 100, 0.5)';
+                        document.body.appendChild(successMsg);
+                        
+                        setTimeout(() => {
+                            successMsg.remove();
+                        }, 3000);
+                    }, 1000);
+                });
+            });
+            
+            // 编辑角色按钮
+            const editButtons = document.querySelectorAll('.role-btn.btn-edit');
+            editButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const roleName = row.querySelector('.role-name').textContent;
+                    alert(`正在编辑角色: ${roleName}`);
+                });
+            });
+            
+            // 删除权限组按钮
+            const deleteButtons = document.querySelectorAll('.role-btn.btn-delete');
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const groupName = row.querySelector('.role-name').textContent;
+                    
+                    if (confirm(`确定要删除权限组"${groupName}"吗？此操作不可撤销！`)) {
+                        row.style.opacity = '0.3';
+                        setTimeout(() => {
+                            row.style.display = 'none';
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

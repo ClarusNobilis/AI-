@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - 管理员入口</title>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <style>
+        :root {
+            --primary-dark: #0a0a12;
+            --primary-dark-alt: #12121f;
+            --primary-accent: #00ff9d;
+            --secondary-accent: #00ccff;
+            --danger-accent: #ff2a6d;
+            --warning-accent: #ffcc00;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --card-bg: rgba(10, 15, 30, 0.7);
+            --card-border: rgba(0, 255, 157, 0.2);
+            --glow-primary: 0 0 10px rgba(0, 255, 157, 0.5);
+            --glow-secondary: 0 0 10px rgba(0, 204, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 100, 200, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 150, 0.1) 0%, transparent 20%),
+                linear-gradient(to bottom, var(--primary-dark), var(--primary-dark-alt));
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 20, 40, 0.2) 0px,
+                    rgba(0, 20, 40, 0.2) 1px,
+                    transparent 1px,
+                    transparent 2px
+                ),
+                linear-gradient(45deg, transparent 20%, rgba(0, 255, 157, 0.05) 25%, transparent 30%);
+            background-size: 300px 300px;
+            pointer-events: none;
+            z-index: -1;
+            animation: scan 10s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 300px 300px; }
+        }
+
+        .terminal-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(5, 10, 20, 0.9);
+            border-bottom: 1px solid var(--primary-accent);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--glow-primary);
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            color: var(--primary-accent);
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .auth-container {
+            display: flex;
+            width: 900px;
+            max-height: 90vh;
+            min-height: 550px;
+            background: rgba(10, 15, 25, 0.85);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .auth-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .auth-banner {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(0, 20, 40, 0.7), rgba(0, 40, 60, 0.8));
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-banner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect fill="none" width="200" height="200"/><path d="M40,40 Q100,20 160,40 L160,160 Q100,180 40,160 Z" fill="rgba(0,255,157,0.05)"/></svg>');
+            background-size: 300px 300px;
+            opacity: 0.2;
+        }
+
+        .banner-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            z-index: 2;
+        }
+
+        .banner-features {
+            list-style: none;
+            margin-top: 30px;
+            z-index: 2;
+        }
+
+        .feature-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px dashed rgba(0, 255, 157, 0.2);
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            color: var(--primary-accent);
+            font-size: 1.2rem;
+        }
+
+        .auth-form-container {
+            width: 400px;
+            height: 550px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-accent) rgba(0, 255, 157, 0.1);
+        }
+
+        .auth-form-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .auth-form-container::-webkit-scrollbar-track {
+            background: rgba(0, 255, 157, 0.1);
+            border-radius: 3px;
+        }
+
+        .auth-form-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-accent);
+            border-radius: 3px;
+        }
+
+        .form-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .switch-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .switch-btn.active {
+            color: var(--primary-accent);
+            text-shadow: var(--glow-primary);
+            border-bottom: 2px solid var(--primary-accent);
+        }
+
+        .auth-form {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--primary-accent);
+        }
+
+        .form-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: var(--glow-primary);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .password-strength {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s;
+        }
+
+        .strength-weak { background: var(--danger-accent); }
+        .strength-medium { background: var(--warning-accent); }
+        .strength-strong { background: var(--primary-accent); }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-checkbox {
+            accent-color: var(--primary-accent);
+        }
+
+        .forgot-password {
+            color: var(--secondary-accent);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .forgot-password:hover {
+            text-shadow: var(--glow-secondary);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            border: none;
+            border-radius: 4px;
+            color: var(--primary-dark);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            box-shadow: var(--glow-primary);
+            transform: translateY(-2px);
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(0, 255, 157, 0.2);
+            margin: 30px 0;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .divider-text {
+            background: var(--primary-dark-alt);
+            padding: 0 15px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            position: absolute;
+        }
+
+        .two-factor {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .two-factor-code {
+            display: flex;
+            gap: 10px;
+        }
+
+        .code-input {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .security-notice {
+            background: rgba(255, 42, 109, 0.1);
+            border: 1px solid var(--danger-accent);
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        .security-icon {
+            color: var(--danger-accent);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .security-text {
+            color: var(--text-secondary);
+        }
+
+        .security-text strong {
+            color: var(--danger-accent);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-link {
+            color: var(--secondary-accent);
+            text-decoration: none;
+            margin-left: 5px;
+            transition: all 0.3s;
+        }
+
+        .footer-link:hover {
+            text-shadow: var(--glow-secondary);
+        }
+
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .captcha-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            background: rgba(0, 10, 20, 0.5);
+            padding: 8px 15px;
+            border-radius: 4px;
+            color: var(--primary-accent);
+            user-select: none;
+        }
+
+        .captcha-refresh {
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .captcha-refresh:hover {
+            color: var(--primary-accent);
+            transform: rotate(90deg);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--primary-accent); }
+            100% { opacity: 0.8; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glow {
+            text-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        /* Terminal cursor effect */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: var(--primary-accent);
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 自定义模态弹窗样式 */
+        .cyber-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .cyber-modal-content {
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow: hidden;
+            position: relative;
+            animation: slideIn 0.4s ease;
+        }
+
+        .cyber-modal-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .cyber-modal-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+        }
+
+        .cyber-modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-accent);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cyber-modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cyber-modal-close:hover {
+            color: var(--danger-accent);
+            text-shadow: 0 0 10px rgba(255, 42, 109, 0.7);
+        }
+
+        .cyber-modal-body {
+            padding: 20px;
+            max-height: calc(80vh - 130px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-accent) rgba(0, 255, 157, 0.1);
+        }
+
+        .cyber-modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .cyber-modal-body::-webkit-scrollbar-track {
+            background: rgba(0, 255, 157, 0.1);
+            border-radius: 3px;
+        }
+
+        .cyber-modal-body::-webkit-scrollbar-thumb {
+            background-color: var(--primary-accent);
+            border-radius: 3px;
+        }
+
+        .cyber-modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0, 255, 157, 0.2);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .cyber-modal-btn {
+            padding: 8px 16px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            border: none;
+            border-radius: 4px;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cyber-modal-btn:hover {
+            box-shadow: var(--glow-primary);
+            transform: translateY(-2px);
+        }
+
+        .data-display {
+            background: rgba(0, 10, 20, 0.5);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .data-key {
+            color: var(--secondary-accent);
+        }
+
+        .data-value {
+            color: var(--primary-accent);
+        }
+
+        .data-string {
+            color: var(--warning-accent);
+        }
+
+        .data-number {
+            color: var(--danger-accent);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .auth-container {
+                width: 95%;
+                height: auto;
+                flex-direction: column;
+            }
+            
+            .auth-banner {
+                padding: 30px;
+            }
+            
+            .auth-form-container {
+                width: 100%;
+                padding: 30px;
+            }
+
+            .cyber-modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Terminal-style Header -->
+    <header class="terminal-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="logo-text">CyberGuard<span class="cursor"></span></div>
+        </div>
+        <div class="security-status">
+            <i class="fas fa-lock"></i> 安全连接已启用
+        </div>
+    </header>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Banner Section -->
+        <div class="auth-banner">
+            <h2 class="banner-title">管理员安全入口</h2>
+            <p>仅限授权人员访问系统管理功能。所有活动均被记录和监控。</p>
+            
+            <ul class="banner-features">
+                <li class="feature-item">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <div>双因素身份验证支持</div>
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-user-lock feature-icon"></i>
+                    <div>基于角色的访问控制</div>
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-history feature-icon"></i>
+                    <div>完整操作审计日志</div>
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-bell feature-icon"></i>
+                    <div>实时安全警报系统</div>
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-database feature-icon"></i>
+                    <div>端到端数据加密</div>
+                </li>
+            </ul>
+            
+            <div class="security-notice" style="margin-top: auto;">
+                <i class="fas fa-exclamation-triangle security-icon"></i>
+                <div class="security-text">
+                    <strong>安全警告：</strong> 此系统仅供授权管理员使用。未经授权的访问尝试将被记录并可能导致法律诉讼。
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Section -->
+        <div class="auth-form-container">
+            <div class="form-switcher">
+                <button class="switch-btn active" data-form="login">管理员登录</button>
+                <button class="switch-btn" data-form="register">注册管理员</button>
+            </div>
+            
+            <!-- 登录表单 -->
+            <form id="login-form" class="auth-form active">
+                <h3 class="form-title">管理员登录</h3>
+                <p class="form-subtitle">请使用您的管理员凭证访问系统</p>
+                
+                <div class="input-group">
+                    <label class="input-label">管理员ID</label>
+                    <input type="text" id="loginAdminIdInput" class="input-field" placeholder="输入管理员ID" required>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">密码</label>
+                    <div class="password-container">
+                        <input type="password" name="password" class="input-field" placeholder="••••••••" required>
+                        <i class="fas fa-eye password-toggle"></i>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" class="remember-checkbox">
+                        记住此设备
+                    </label>
+                    <a href="#" class="forgot-password">忘记密码?</a>
+                </div>
+                
+                <button type="submit" class="submit-btn">进入控制台</button>
+                
+                <div class="divider">
+                    <span class="divider-text">或使用双因素认证</span>
+                </div>
+                
+                <div class="two-factor">
+                    <div class="input-group">
+                        <label class="input-label">双因素认证码</label>
+                        <div class="two-factor-code">
+                            <input type="text" class="code-input" maxlength="1" pattern="\d">
+                            <input type="text" class="code-input" maxlength="1" pattern="\d">
+                            <input type="text" class="code-input" maxlength="1" pattern="\d">
+                            <input type="text" class="code-input" maxlength="1" pattern="\d">
+                            <input type="text" class="code-input" maxlength="1" pattern="\d">
+                            <input type="text" class="code-input" maxlength="1" pattern="\d">
+                        </div>
+                    </div>
+                    <button type="button" class="submit-btn" style="background: rgba(0, 204, 255, 0.2);">验证</button>
+                </div>
+            </form>
+            
+            <!-- 注册表单 -->
+            <form id="register-form" class="auth-form">
+                <h3 class="form-title">注册管理员</h3>
+                <p class="form-subtitle">使用授权码创建新的管理员账户</p>
+                
+                <div class="input-group">
+                    <label class="input-label">管理员ID</label>
+                    <input type="text" id="registerAdminIdInput" class="input-field" placeholder="输入管理员ID" required>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">注册授权码</label>
+                    <input type="text" id="authCode" class="input-field" placeholder="输入注册授权码 (格式: XXXX-XXXX-XXXX-XXXX)" required>
+                </div>
+                
+
+                <div class="input-group">
+                    <label class="input-label">设置密码</label>
+                    <div class="password-container">
+                        <input type="password" id="register-password" name="password" class="input-field" placeholder="••••••••" required>
+                        <i class="fas fa-eye password-toggle"></i>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-meter"></div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">确认密码</label>
+                    <input type="password" name="confirmPassword" class="input-field" placeholder="••••••••" required>
+                </div>
+                
+                <div class="captcha-container">
+                    <div class="captcha-code" id="captchaCode">8A3F</div>
+                    <i class="fas fa-sync-alt captcha-refresh"></i>
+                    <input type="text" id="captchaInput" class="input-field" placeholder="输入验证码" style="flex: 2;" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">创建账户</button>
+                
+                <div class="security-notice">
+                    <i class="fas fa-info-circle security-icon"></i>
+                    <div class="security-text">
+                        注册码由系统超级管理员生成，有效期为24小时。
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+     
+  
+
+
+        // 在页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 添加调试按钮
+            const debugBtn = document.createElement('button');
+            debugBtn.innerHTML = '<i class="fas fa-bug"></i> 调试: 查看用户数据';
+            debugBtn.style.position = 'fixed';
+            debugBtn.style.bottom = '20px';
+            debugBtn.style.right = '20px';
+            debugBtn.style.zIndex = '1000';
+            debugBtn.style.padding = '10px 15px';
+            debugBtn.style.background = 'linear-gradient(to right, var(--primary-accent), var(--secondary-accent))';
+            debugBtn.style.color = 'var(--primary-dark)';
+            debugBtn.style.border = 'none';
+            debugBtn.style.borderRadius = '4px';
+            debugBtn.style.cursor = 'pointer';
+            debugBtn.style.fontFamily = "'Consolas', 'Courier New', monospace";
+            debugBtn.style.fontWeight = 'bold';
+            debugBtn.style.fontSize = '0.9rem';
+            debugBtn.style.textTransform = 'uppercase';
+            debugBtn.style.letterSpacing = '1px';
+            debugBtn.style.transition = 'all 0.3s';
+            debugBtn.style.boxShadow = '0 0 10px rgba(0, 255, 157, 0.3)';
+
+            // 添加悬停效果
+            debugBtn.addEventListener('mouseover', () => {
+                debugBtn.style.transform = 'translateY(-2px)';
+                debugBtn.style.boxShadow = '0 0 20px rgba(0, 255, 157, 0.5)';
+            });
+            
+            debugBtn.addEventListener('mouseout', () => {
+                debugBtn.style.transform = 'translateY(0)';
+                debugBtn.style.boxShadow = '0 0 10px rgba(0, 255, 157, 0.3)';
+            });
+
+            // 点击事件使用自定义模态弹窗
+            debugBtn.addEventListener('click', () => {
+                const users = JSON.parse(localStorage.getItem('adminUsers') || '{}');
+                const formattedContent = formatJsonForDisplay(users);
+                showModal(formattedContent);
+            });
+            
+            document.body.appendChild(debugBtn);
+        });
+        
+        // 处理登录表单提交 - 使用localStorage验证
+        document.getElementById('login-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('登录表单提交开始');
+            
+            const username = document.getElementById('loginAdminIdInput').value.trim();
+            const password = document.querySelector('#login-form input[name="password"]').value;
+            
+            if (!username || !password) {
+                alert('请输入管理员ID和密码');
+                return;
+            }
+
+            try {
+                // 从localStorage获取用户数据
+                const storedUsers = JSON.parse(localStorage.getItem('adminUsers') || '{}');
+                const admin = storedUsers[username];
+                
+                if (!admin) {
+                    throw new Error('管理员ID不存在');
+                }
+                
+                if (admin.password !== password) {
+                    throw new Error('密码不正确');
+                }
+                
+                console.log('登录验证成功');
+                // 更新最后登录时间
+                storedUsers[username].lastLogin = new Date().toISOString();
+                localStorage.setItem('adminUsers', JSON.stringify(storedUsers));
+                localStorage.setItem('loggedInAdmin', username);
+                alert('登录成功！正在进入管理控制台...');
+                window.location.href = '../admin/admin.html';
+            } catch (error) {
+                console.error('登录错误:', error);
+                alert(`登录失败: ${error.message}`);
+            }
+        });
+        
+        // 生成随机验证码
+function generateCaptcha() {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let captcha = '';
+    for (let i = 0; i < 4; i++) {
+        captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('captchaCode').textContent = captcha;
+}
+
+// 初始化验证码
+window.addEventListener('load', generateCaptcha);
+
+// 验证码刷新按钮事件
+document.querySelector('.captcha-refresh').addEventListener('click', generateCaptcha);
+
+        // 处理注册表单提交 - 使用localStorage存储
+        document.getElementById('register-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('注册表单提交开始');
+            
+            try {
+                // 获取表单数据
+                const adminId = document.getElementById('registerAdminIdInput').value.trim();
+                const password = document.querySelector('#register-form input[name="password"]').value;
+                const confirmPassword = document.querySelector('#register-form input[name="confirmPassword"]').value;
+                const authCode = document.getElementById('authCode').value;
+                const captchaInput = document.getElementById('captchaInput').value;
+                const captchaCode = document.getElementById('captchaCode').textContent;
+
+                // 验证验证码
+                if (captchaInput !== captchaCode) {
+                    alert('验证码不正确，请重新输入');
+                    generateCaptcha();
+                    return;
+                }
+                
+                // 验证密码匹配
+                if (password !== confirmPassword) {
+                    alert('两次输入的密码不匹配');
+                    return;
+                }
+                
+                // 验证注册授权码
+                const validAuthCode = 'fUQ1-TRia-2oBu-MqZI';
+                if (authCode !== validAuthCode) {
+                    alert('注册授权码不正确，请检查后重试');
+                    return;
+                }
+                
+                // 验证用户名长度
+                if (adminId.length < 4) {
+                    alert('管理员ID至少需要4个字符');
+                    return;
+                }
+                
+                // 验证密码强度
+                if (password.length < 8) {
+                    alert('密码至少需要8个字符');
+                    return;
+                }
+
+                // 检查用户名是否已存在
+                const storedUsers = JSON.parse(localStorage.getItem('adminUsers') || '{}');
+                if (storedUsers[adminId]) {
+                    alert(`注册失败: 管理员ID "${adminId}" 已存在`);
+                    return;
+                }
+
+                // 添加新用户到localStorage
+                storedUsers[adminId] = {
+                    username: adminId,
+                    password: password,
+                    role: 'admin',
+                    createdAt: new Date().toISOString()
+                };
+                localStorage.setItem('adminUsers', JSON.stringify(storedUsers));
+
+                alert('管理员账户创建成功！请使用新账户登录');
+                document.getElementById('register-form').reset();
+                generateCaptcha();
+                switchForm('login');
+                
+            } catch (error) {
+                console.error('注册错误:', error);
+                alert(`注册时发生错误: ${error}`);
+            }
+        });
+        
+        // 切换表单 - 增强事件处理
+        document.addEventListener('click', (e) => {
+            // 查找最近的switch-btn父元素
+            const switchBtn = e.target.closest('.switch-btn');
+            if (switchBtn) {
+                const formType = switchBtn.dataset.form;
+                if (formType) {
+                    switchForm(formType);
+                    // 添加调试日志
+                    console.log(`切换到${formType}表单`);
+                }
+            }
+        });
+
+        // 初始化显示登录表单
+        window.addEventListener('load', () => switchForm('login'));
+        
+        function switchForm(formType) {
+            // 隐藏所有表单
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            // 显示目标表单
+            document.getElementById(`${formType}-form`).classList.add('active');
+            
+            // 更新按钮状态
+            document.querySelectorAll('.switch-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.form === formType);
+            });
+        }
+        
+        // 密码显示/隐藏切换
+        document.querySelectorAll('.password-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const passwordInput = toggle.parentElement.querySelector('input');
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                toggle.classList.toggle('fa-eye');
+                toggle.classList.toggle('fa-eye-slash');
+            });
+        });
+        
+    </script>
+    <!-- 自定义模态弹窗 -->
+    <div id="cyberModal" class="cyber-modal">
+        <div class="cyber-modal-content">
+            <div class="cyber-modal-header">
+                <h3 class="cyber-modal-title">
+                    <i class="fas fa-database"></i> 管理员数据查看器
+                </h3>
+                <button class="cyber-modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="cyber-modal-body">
+                <div id="modalContent" class="data-display"></div>
+            </div>
+            <div class="cyber-modal-footer">
+                <button class="cyber-modal-btn" onclick="closeModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示模态弹窗
+        function showModal(content) {
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('cyberModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭模态弹窗
+        function closeModal() {
+            document.getElementById('cyberModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // 恢复背景滚动
+        }
+
+        // 格式化JSON数据为高亮显示
+        function formatJsonForDisplay(jsonObj) {
+            if (!jsonObj || Object.keys(jsonObj).length === 0) {
+                return '<span class="data-value">暂无管理员数据</span>';
+            }
+
+            let html = '';
+            for (const [username, userData] of Object.entries(jsonObj)) {
+                html += `<div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed rgba(0, 255, 157, 0.2);">`;
+                html += `<span class="data-key">管理员ID:</span> <span class="data-string">${username}</span><br>`;
+                
+                for (const [key, value] of Object.entries(userData)) {
+                    if (key === 'password') {
+                        // 密码显示为星号
+                        html += `<span class="data-key">${key}:</span> <span class="data-value">${'•'.repeat(8)}</span><br>`;
+                    } else if (typeof value === 'string') {
+                        html += `<span class="data-key">${key}:</span> <span class="data-string">${value}</span><br>`;
+                    } else if (typeof value === 'number') {
+                        html += `<span class="data-key">${key}:</span> <span class="data-number">${value}</span><br>`;
+                    } else {
+                        html += `<span class="data-key">${key}:</span> <span class="data-value">${JSON.stringify(value)}</span><br>`;
+                    }
+                }
+                html += `</div>`;
+            }
+            return html;
+        }
+    </script>
+</body>
+</html>

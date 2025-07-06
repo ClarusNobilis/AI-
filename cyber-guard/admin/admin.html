@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - 管理员控制台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0a0a12;
+            --primary-dark-alt: #12121f;
+            --primary-accent: #00ff9d;
+            --secondary-accent: #00ccff;
+            --danger-accent: #ff2a6d;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --card-bg: rgba(10, 15, 30, 0.7);
+            --card-border: rgba(0, 255, 157, 0.2);
+            --glow-primary: 0 0 10px rgba(0, 255, 157, 0.5);
+            --glow-secondary: 0 0 10px rgba(0, 204, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 100, 200, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 150, 0.1) 0%, transparent 20%),
+                linear-gradient(to bottom, var(--primary-dark), var(--primary-dark-alt));
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 20, 40, 0.2) 0px,
+                    rgba(0, 20, 40, 0.2) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Terminal-style header */
+        .terminal-header {
+            background-color: rgba(5, 10, 20, 0.9);
+            border-bottom: 1px solid var(--primary-accent);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--glow-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            color: var(--primary-accent);
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main container */
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 250px;
+            background-color: rgba(10, 15, 25, 0.8);
+            border-right: 1px solid var(--card-border);
+            padding: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-sidebar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(0, 255, 157, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            padding: 10px 25px;
+            font-size: 0.9rem;
+            color: var(--secondary-accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 204, 255, 0.2);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0, 255, 157, 0.1);
+            color: var(--primary-accent);
+        }
+
+        .menu-item.active {
+            background-color: rgba(0, 255, 157, 0.15);
+            color: var(--primary-accent);
+            border-left: 3px solid var(--primary-accent);
+        }
+
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-item .badge {
+            background-color: var(--danger-accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            position: absolute;
+            right: 25px;
+        }
+
+        /* Main content */
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            align-content: start;
+        }
+
+        .content-header {
+            grid-column: 1 / -1;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        /* Dashboard cards */
+        .dashboard-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 255, 157, 0.2);
+        }
+
+        .dashboard-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary-accent);
+            font-size: 1.5rem;
+        }
+
+        .card-stat {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card-chart {
+            height: 100px;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            opacity: 0.3;
+        }
+
+        .chart-bar {
+            background: linear-gradient(to top, var(--primary-accent), transparent);
+            align-self: flex-end;
+            border-radius: 3px 3px 0 0;
+            animation: grow 1.5s ease-out;
+        }
+
+        .bar-1 { height: 70%; }
+        .bar-2 { height: 40%; }
+        .bar-3 { height: 90%; }
+        .bar-4 { height: 60%; }
+        .bar-5 { height: 30%; }
+
+        /* Activity section */
+        .activity-card {
+            grid-column: span 2;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 15px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon i {
+            font-size: 18px;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .activity-user {
+            color: var(--primary-accent);
+        }
+
+        /* Footer */
+        .admin-footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 25px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--primary-accent); }
+            100% { opacity: 0.8; }
+        }
+
+        @keyframes grow {
+            from { height: 0; }
+        }
+
+        .glow {
+            text-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        /* Terminal cursor effect */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: var(--primary-accent);
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .menu-item {
+                padding: 10px 15px;
+            }
+            
+            .activity-card {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-content {
+                padding: 15px;
+            }
+            
+            .dashboard-card {
+                grid-column: 1 / -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Terminal-style Header -->
+    <header class="terminal-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="logo-text">CyberGuard<span class="cursor"></span></div>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <div class="user-details">
+                <div class="user-name">admin@cyberguard.io</div>
+                <div class="user-role">超级管理员</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">导航菜单</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item active" onclick="window.location.href='admin.html'">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>控制台</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/dashboard.html'">
+                        <i class="fas fa-users"></i>
+                        <span>用户管理</span>
+                        <span class="badge">12</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/articles.html'">
+                        <i class="fas fa-file-alt"></i>
+                        <span>内容管理</span>
+                        <span class="badge">5</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/tools.html'">
+                        <i class="fas fa-tools"></i>
+                        <span>工具审核</span>
+                        <span class="badge">8</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/events.html'">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全事件</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">系统管理</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='../dashboard/System_Setting.html'">
+                        <i class="fas fa-cog"></i>
+                        <span>系统设置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/Database_management.html'">
+                        <i class="fas fa-database"></i>
+                        <span>数据库管理</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/Permission_configuration.html'">
+                        <i class="fas fa-key"></i>
+                        <span>权限配置</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/Operation_Log.html'">
+                        <i class="fas fa-history"></i>
+                        <span>操作日志</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">快速操作</div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item" onclick="window.location.href='../dashboard/Add_administrators.html'">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>添加管理员</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/Announcement.html'">
+                        <i class="fas fa-bell"></i>
+                        <span>发送公告</span>
+                    </li>
+                    <li class="menu-item" onclick="window.location.href='../dashboard/Data_export.html'">
+                        <i class="fas fa-file-export"></i>
+                        <span>数据导出</span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="content-header">
+                <h1 class="section-title">管理员控制台</h1>
+                <p class="section-subtitle">最后更新: 2023-10-15 14:30:45 | 系统状态: <span class="glow">运行中</span></p>
+            </div>
+
+            <!-- Dashboard Stats Cards -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-users"></i> 用户统计</h3>
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <div class="card-stat">8,452</div>
+                <p class="card-desc">过去7天新增用户: <span class="glow">142</span> | 管理员: 12</p>
+                <div class="card-chart">
+                    <div class="chart-grid">
+                        <div class="chart-bar bar-1"></div>
+                        <div class="chart-bar bar-2"></div>
+                        <div class="chart-bar bar-3"></div>
+                        <div class="chart-bar bar-4"></div>
+                        <div class="chart-bar bar-5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-file-alt"></i> 内容管理</h3>
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <div class="card-stat">2,147</div>
+                <p class="card-desc">待审核文章: <span class="glow">5</span> | 今日新增: 24</p>
+                <div class="card-chart">
+                    <div class="chart-grid">
+                        <div class="chart-bar bar-2"></div>
+                        <div class="chart-bar bar-4"></div>
+                        <div class="chart-bar bar-1"></div>
+                        <div class="chart-bar bar-5"></div>
+                        <div class="chart-bar bar-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-tools"></i> 安全工具</h3>
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <div class="card-stat">317</div>
+                <p class="card-desc">待审核工具: <span class="glow">8</span> | 本月下载: 4,812</p>
+                <div class="card-chart">
+                    <div class="chart-grid">
+                        <div class="chart-bar bar-3"></div>
+                        <div class="chart-bar bar-5"></div>
+                        <div class="chart-bar bar-2"></div>
+                        <div class="chart-bar bar-1"></div>
+                        <div class="chart-bar bar-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-shield-alt"></i> 安全事件</h3>
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <div class="card-stat">84</div>
+                <p class="card-desc">高危事件: <span class="glow">12</span> | 本周新增: 7</p>
+                <div class="card-chart">
+                    <div class="chart-grid">
+                        <div class="chart-bar bar-5"></div>
+                        <div class="chart-bar bar-1"></div>
+                        <div class="chart-bar bar-4"></div>
+                        <div class="chart-bar bar-3"></div>
+                        <div class="chart-bar bar-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="activity-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-list"></i> 最近活动</h3>
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-title">新用户注册</div>
+                            <div class="activity-time">用户 <span class="activity-user">security_expert</span> 刚刚注册了账号</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-title">新文章提交</div>
+                            <div class="activity-time">用户 <span class="activity-user">net_guardian</span> 提交了文章 "高级渗透测试技术"</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-toolbox"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-title">新工具添加</div>
+                            <div class="activity-time">用户 <span class="activity-user">code_breaker</span> 提交了工具 "端口扫描器 v3.2"</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-title">安全事件报告</div>
+                            <div class="activity-time">系统检测到新的XSS攻击事件，级别: <span class="glow">高危</span></div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-title">权限变更</div>
+                            <div class="activity-time">管理员 <span class="activity-user">sys_admin</span> 将用户 <span class="activity-user">pentester01</span> 升级为内容审核员</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <footer class="admin-footer">
+                <p>CyberGuard 网络安全内容分享社区 | 管理员控制台 v2.4.1</p>
+                <p>最后登录IP: 192.168.1.105 | 登录时间: 2023-10-15 14:15:22</p>
+                <p>© 2023 CyberGuard 团队 | 安全审计通过</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // 数据库初始化
+        let db;
+        const DB_NAME = 'CyberGuardAdminDB';
+        const STORE_NAME = 'users';
+        
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME);
+                
+                request.onerror = (event) => {
+                    console.error('数据库打开失败:', event.target.error);
+                    reject(event.target.error);
+                };
+                
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log('数据库连接成功，版本:', db.version);
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, {
+                            keyPath: 'id',
+                            autoIncrement: true
+                        });
+                        store.createIndex('username', 'username', { unique: true });
+                        store.createIndex('email', 'email', { unique: true });
+                    }
+                };
+            });
+        }
+
+        // 模拟终端光标效果
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 初始化数据库
+            try {
+                await initDB();
+            } catch (error) {
+                console.error('数据库初始化失败:', error);
+            }
+            const cursor = document.querySelector('.cursor');
+            
+            setInterval(() => {
+                cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+            }, 500);
+            
+            // 卡片悬停效果增强
+            const cards = document.querySelectorAll('.dashboard-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 8px 25px rgba(0, 255, 157, 0.3)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+                });
+            });
+            
+            // 菜单项点击效果
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
